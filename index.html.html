@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>PotoBox - Filter, Emoji, Galeri</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+
+    video, canvas {
+      width: 400px;
+      height: 300px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .controls {
+      margin: 10px 0;
+    }
+
+    .controls select, .controls button {
+      padding: 10px;
+      margin: 5px;
+      font-size: 14px;
+    }
+
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .photo {
+      position: relative;
+      width: 200px;
+    }
+
+    .photo img {
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    .emoji {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>PotoBox 📸</h1>
+  <video id="video" autoplay></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <div class="controls">
+    <select id="filter">
+      <option value="none">Tanpa Filter</option>
+      <option value="grayscale(100%)">Grayscale</option>
+      <option value="sepia(100%)">Sepia</option>
+      <option value="invert(100%)">Invert</option>
+      <option value="brightness(150%)">Brightness</option>
+    </select>
+
+    <select id="emoji">
+      <option value="">Tanpa Emoji</option>
+      <option value="😊">😊</option>
+      <option value="😎">😎</option>
+      <option value="❤️">❤️</option>
+      <option value="😂">😂</option>
+    </select>
+
+    <button onclick="takePhoto()">📷 Ambil Foto</button>
+  </div>
+
+  <div class="gallery" id="gallery"></div>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const filterSelect = document.getElementById('filter');
+    const emojiSelect = document.getElementById('emoji');
+    const gallery = document.getElementById('gallery');
+
+    // Akses kamera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        alert("Gagal mengakses kamera: " + err);
+      });
+
+    function takePhoto() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const filter = filterSelect.value;
+      ctx.filter = filter;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Tambah emoji jika ada
+      const emoji = emojiSelect.value;
+      if (emoji) {
+        ctx.font = "50px Arial";
+        ctx.fillText(emoji, 20, 60);
+      }
+
+      const imageURL = canvas.toDataURL("image/png");
+
+      // Tampilkan di galeri
+      const photoDiv = document.createElement("div");
+      photoDiv.className = "photo";
+      const img = document.createElement("img");
+      img.src = imageURL;
+
+      if (emoji) {
+        const emojiDiv = document.createElement("div");
+        emojiDiv.className = "emoji";
+        emojiDiv.innerText = emoji;
+        photoDiv.appendChild(emojiDiv);
+      }
+
+      photoDiv.appendChild(img);
+      gallery.prepend(photoDiv);
+    }
+  </script>
+</body>
+</html>
